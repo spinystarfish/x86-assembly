@@ -220,3 +220,20 @@ You can exchange data between registers or between registers and memory, but not
 And remember that the xchg instruction does NOT accept immediate operands!
 ```
 You lazy programmers - I'm doing all your stack overflow searching for you.
+
+## Meta
+
+Kenzie Clarke – [Linkedin Page](https://www.linkedin.com/in/kenzieclarke07/) – kenzieclarke@tcu.edu
+
+Distributed under the GPL license. See ``LICENSE`` for more information.
+
+[https://github.com/spinystarfish/github-link](https://github.com/spinystarfish)
+
+## Contributing
+I understand that my annotations may not be correct. We are all still learning. Please feel free to add or make corrections.
+
+1. Fork it (<https://github.com/yourname/yourproject/fork>)
+2. Create your feature branch (`git checkout -b feature/fooBar`)
+3. Commit your changes (`git commit -am 'Add some fooBar'`)
+4. Push to the branch (`git push origin feature/fooBar`)
+5. Create a new Pull Request
