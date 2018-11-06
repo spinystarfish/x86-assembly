@@ -4,8 +4,7 @@ typedef int bool;
 
 int sum(int x, int y)
 {
-    int z = x + y;
-    return z;
+    return x + y;
 }
 
 int turnneg(int x)
@@ -47,9 +46,9 @@ int loop(int x)
 {   /* this loop goes from 0 to 4 */
     for(int i=0; i < 5; i++)
     {
-        x = x - 1;    
-        return x;
+        x = x - 1;
     }
+    return x;
 }
 
 int main()
@@ -60,9 +59,9 @@ int main()
     
     /*Adding together x = 10 and y = 3 */
     sumy = sum(x, y);
-    /*Adding ten to x = 10 to make 20 */
+    /*Adding ten to x = 10 to make extraten = 20 */
     extraten = addten(x);
-    /*Turning x = 20 into x = -20 */
+    /*Turning x = 10 into extraten = -10 */
     extraten = turnneg(x);
     /* Making x = 30 and dividing by y = 3 */
     x = 30;
