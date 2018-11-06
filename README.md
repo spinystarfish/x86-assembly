@@ -12,7 +12,25 @@ x86 assembly. Fascinating...also Mind-numbing, sometimes at the same time. I cou
 ## From the Assempractice.c file
 
 ### sum function
-Patience, skywalker.
+This function is designed to add together two passed parameters and return that result. Here is the C function:
+```sh
+int sum(int x, int y)
+{
+    return x + y;
+}
+```
+Here is the *annotated* assembly:
+```sh
+00401460 <_sum>:
+  401460:	55                   	push   %ebp            #Set up the stack (push base pointer)
+  401461:	89 e5                	mov    %esp,%ebp       #Move stack pointer to base pointer (set up continued)
+  401463:	8b 55 08             	mov    0x8(%ebp),%edx  #Move 0x8(%ebp)[local var x] into %edx register
+  401466:	8b 45 0c             	mov    0xc(%ebp),%eax  #Move 0xc(%ebp)[local var y] into %eax register
+  401469:	01 d0                	add    %edx,%eax       #Add together %edx[x] and %eax[y] and store in %eax
+  40146b:	5d                   	pop    %ebp            #Pop base pointer (clean up)
+  40146c:	c3                   	ret                    #Return
+```
+The assembly code make an easy to read step process. It sets up the stack, moves x into one register (from memory), moves y into the return register, then adds x to y in the return register. When the function returns, the main function will find that the sum of x + y is sitting in the %eax register waiting for main.
 
 ### turnneg function
 This function is designed to turn a positive number negative and a negative number...positive. In hindsight, I should have named it "flipsign". Oh well, here it is anyway:
