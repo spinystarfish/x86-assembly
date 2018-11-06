@@ -61,14 +61,130 @@ I don't think it gets much simpler than this. Notice how I choose to create a ne
 Lines 6 and 7 of this assembly function are completely unnecessary and wasting the code's time and space.
 
 ### divide function
-To be continued.
-### choice function
-In progress.
-### fibonacci function
-Working on it.
-### loop function
-I'm a gettin there.
+This function performs simple arthimetic on two passed parameters, saves it as a new local variable, and returns that variable. This is going to cause the same inefficency as seen in the addten function.
+```sh
+int divide(int x, int y)
+{
+    int z = x/y;
+    return z;
+}
+```
+See? Nothing to it. It's so small I think it's cute. The *annotated* assembly is slightly longer:
+```sh
+00401495 <_divide>:
+  401495:	55                   	push   %ebp             #Set up the stack frame (push base pointer)
+  401496:	89 e5                	mov    %esp,%ebp        #Move stack pointer to base pointer (still set up)
+  401498:	83 ec 10             	sub    $0x10,%esp       #Subtract decimal 10 from stack pointer (space for variables)
+  40149b:	8b 45 08             	mov    0x8(%ebp),%eax   #Move 0x8(%esp)[local var x] to %eax register
+  40149e:	99                   	cltd                    #Cast from signed int to long (see below)
+  40149f:	f7 7d 0c             	idivl  0xc(%ebp)        #128/64 bit Division performed with 0xc(%ebp)
+  4014a2:	89 45 fc             	mov    %eax,-0x4(%ebp)  #Move result in %eax register to -0x4(%ebp)[local var z]
+  4014a5:	8b 45 fc             	mov    -0x4(%ebp),%eax  #Move z right back into %eax register
+  4014a8:	c9                   	leave                   #Clean up
+  4014a9:	c3                   	ret                     #Return to main function
+```
+Similar to the turnneg function steps, but with a few changes. The ctld instruction basically sign extends 4 bytes into 8 bytes, which in 2's complement means that for negative numbers, the bits of the upper 4 bytes must set to 1 and for positive numbers, they must be set to 0. In C, that usually represents a cast from signed int to long. The idivq instruction divides a 128-bit integer (eax[x] : 0xc(%ebp)[y]) by the operand. 0xc(%ebp) holds the lower 64-bits of the dividend, while eax holds the upper 64-bits of the dividend.
 
+### choice function
+This method uses an if-else statement to check if the passed parameter x is a zero or not. If it IS a 0, then we return true. If it is NOT a zero we return false. Since C doesn't have automatic boolean types, I defined mine real quick at the top of the program. I defined true as a positive '1'and false as a '0'. For the purpose of this method that may seem a little confusing, so we'll just stick with true or false. Here is the C function:
+```sh
+bool choice(int x)
+{
+    if(x == 0)
+        return true;
+    else
+        return false;
+}
+```
+Very straightfoward. Now for the *annotated* assembly. I stress that it is annotated because you will not find the right-hand comments on your own assembly objdump nor will they be in my files. Exclusive README content, right here.
+```sh
+004014aa <_choice>:
+  4014aa:	55                   	push   %ebp                   #Set up the stack frame (push base pointer)
+  4014ab:	89 e5                	mov    %esp,%ebp              #Move stack pointer to base pointer (still set up)
+  4014ad:	83 7d 08 00          	cmpl   $0x0,0x8(%ebp)         #Compare decimal zero with value at 0x8(%ebp)[local var x]1 
+  4014b1:	75 07                	jne    4014ba <_choice+0x10>  #Jump if not equal to 0 to move instruction at 4014ba
+  4014b3:	b8 01 00 00 00       	mov    $0x1,%eax              #Add decimal 1 to the %eax register
+  4014b8:	eb 05                	jmp    4014bf <_choice+0x15>  #Jump to the pop instruction (4014bf)
+  4014ba:	b8 00 00 00 00       	mov    $0x0,%eax              #Clean up (Move decimal 0 into %eax register)
+  4014bf:	5d                   	pop    %ebp                   #Pop the base pointer
+  4014c0:	c3                   	ret                           #Return
+```
+This is the first mini function to use jumps(could also use branches). What this assembly process is doing is saying that it will first compare x with 0. If it finds that x does NOT equal 0, it skips over the next two lines and adds a 0[False] to the return variable. If it IS equal to 0, though, it will read the next line that adds a 1[True] to the return variable and then jump past the two lines after that which would add one. This way, we are moving either a 1 or a 0 to the return variable.
+  X is True: read 4014b3 and 4014b8
+  X is False: read 4014b1 and 4014ba
+  
+### fibonacci function
+**In Progress**
+The mathematical formula of the universe. It is said to show up almost everywhere in nature. It certainly shows up everywhere when you are trying to get a computer science degree. Here is the C method to recursively implement fibonacci:
+```sh
+int fibonacci( int num)
+{    if(num == 0)
+        return 0;
+    else if(num == 1)
+        return 1;
+    else
+        return fibonacci(num-2) + fibonacci(num-1);
+}
+```
+This may not seem too difficult, but recursion in assembly can prove tricky. Let's take a look at how I broke down the assembly method:
+```sh
+004014c1 <_fibonacci>:
+  4014c1:	55                   	push   %ebp
+  4014c2:	89 e5                	mov    %esp,%ebp
+  4014c4:	53                   	push   %ebx
+  4014c5:	83 ec 14             	sub    $0x14,%esp
+  4014c8:	83 7d 08 00          	cmpl   $0x0,0x8(%ebp)
+  4014cc:	75 07                	jne    4014d5 <_fibonacci+0x14>
+  4014ce:	b8 00 00 00 00       	mov    $0x0,%eax
+  4014d3:	eb 2d                	jmp    401502 <_fibonacci+0x41>
+  4014d5:	83 7d 08 01          	cmpl   $0x1,0x8(%ebp)
+  4014d9:	75 07                	jne    4014e2 <_fibonacci+0x21>
+  4014db:	b8 01 00 00 00       	mov    $0x1,%eax
+  4014e0:	eb 20                	jmp    401502 <_fibonacci+0x41>
+  4014e2:	8b 45 08             	mov    0x8(%ebp),%eax
+  4014e5:	83 e8 02             	sub    $0x2,%eax
+  4014e8:	89 04 24             	mov    %eax,(%esp)
+  4014eb:	e8 d1 ff ff ff       	call   4014c1 <_fibonacci>
+  4014f0:	89 c3                	mov    %eax,%ebx
+  4014f2:	8b 45 08             	mov    0x8(%ebp),%eax
+  4014f5:	83 e8 01             	sub    $0x1,%eax
+  4014f8:	89 04 24             	mov    %eax,(%esp)
+  4014fb:	e8 c1 ff ff ff       	call   4014c1 <_fibonacci>
+  401500:	01 d8                	add    %ebx,%eax
+  401502:	83 c4 14             	add    $0x14,%esp
+  401505:	5b                   	pop    %ebx
+  401506:	5d                   	pop    %ebp
+  401507:	c3                   	ret 
+  ```
+
+### (failed) loop function
+This function creates a little for loop that decrements a number by 5. Here is the C code:
+```sh
+int loop(int x)
+{   /* this loop goes from 0 to 4 */
+    for(int i=0; i < 5; i++)
+    {
+        x = x - 1;    
+        return x;
+    }
+}
+```
+Whoops... notice the problem? I return my x value INSIDE the for loop. Therefore this function only decrements x one time. Let's see how the assembly code handled this programmer mess:
+```sh
+00401508 <_loop>:
+  401508:	55                   	push   %ebp                #Set up the stack frame (push base pointer)
+  401509:	89 e5                	mov    %esp,%ebp           #Move stack pointer to base pointer (still set up)
+  40150b:	83 ec 10             	sub    $0x10,%esp          #Subtract decimal 10 from stack pointer (space for variables)
+  40150e:	c7 45 fc 00 00 00 00 	movl   $0x0,-0x4(%ebp)     #Move decimal 0 into -0x4(%ebp)[local var i]
+  401515:	83 7d fc 04          	cmpl   $0x4,-0x4(%ebp)     #Compare decimal 4 with 0x4(%ebp)[local var i]
+  401519:	7f 09                	jg     401524 <_loop+0x1c> #Jump if i is greater than 4 
+  40151b:	83 6d 08 01          	subl   $0x1,0x8(%ebp)      #Subtract decimal 1 from 0x8(%ebp)[local var x]
+  40151f:	8b 45 08             	mov    0x8(%ebp),%eax      #Move 0x8(%ebp)[local var x] into %eax register
+  401522:	eb 00                	jmp    401524 <_loop+0x1c> #Jump to the leave instruction
+  401524:	c9                   	leave                      #Clean up
+  401525:	c3                   	ret                        #Return
+```
+The assembly code does add the jump after the compare condition for the for loop, but the next few lines show no jump back up to 40151b (where the subtraction occurs). This shows that this code does NOT actually loop anything. I will update this repository with another section using a valid for loop soon.
 
 ### main function
 Here is the main function, where assempractice initializes a few local variables and proceeds to call all of the mini functions defined above it.
@@ -221,6 +337,10 @@ And remember that the xchg instruction does NOT accept immediate operands!
 ```
 You lazy programmers - I'm doing all your stack overflow searching for you.
 
+I hope this README and repository that you have stumbled across has provided some rudamentary examples for understanding assembly using simple C methods. Try this on your own, gradually adding more complicated methods and annotating the assembly results. Or, try writing a few simple C methods in assembly first, and see if they match up with your C counterparts.
+
+The best way to learn is to practice and make mistakes!
+
 ## Meta
 
 Kenzie Clarke – [Linkedin Page](https://www.linkedin.com/in/kenzieclarke07/) – kenzieclarke@tcu.edu
@@ -231,6 +351,7 @@ Distributed under the GPL license. See ``LICENSE`` for more information.
 
 ## Contributing
 I understand that my annotations may not be correct. We are all still learning. Please feel free to add or make corrections.
+If that is too much work, the issues tab is always available. :)
 
 1. Fork it (<https://github.com/yourname/yourproject/fork>)
 2. Create your feature branch (`git checkout -b feature/fooBar`)
